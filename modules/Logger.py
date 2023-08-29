@@ -54,6 +54,7 @@ class Logger:
             + BColors.OKCYAN
             + f" {module_name} "
             + BColors.ENDC
+            + f" {inspect.stack()[1].filename} - Line {inspect.stack()[1].lineno} "
             + message
         )
         Logger._instance.log.error(f"{message}\n")

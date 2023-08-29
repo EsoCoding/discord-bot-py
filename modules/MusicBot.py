@@ -26,12 +26,25 @@ class MusicBot:
         async def on_ready():
             # Log that the bot is logged in and print it to the console
             Logger.info(f"Bot is now logged in as {self.client.user}")
-            print(f"Bot is now logged in as {self.client.user}")
-
-            # Set the bot's presence to "Music Downloader Bot"
+            # set status of the bot to online
             await self.client.change_presence(
-                activity=discord.Game(name="Music Downloader Bot")
+                status=discord.Status.online, activity=None
             )
+
+        # Event handler for when the bot receives a message
+        @self.client.event
+        async def on_message(message):
+            # Log the message and the author
+            Logger.info(f"Received message {message.content} from {message.author}")
+            # Process the message
+            await self.client.process_commands(message)
+
+        # Event handler for when the bot receives a command error
+        @self.client.event  # event decorator/wrapper
+        async def on_command_error(ctx, error):
+            # Log the error and send an error message
+            Logger.error(f"Error: {str(error)}")
+            await ctx.send(f"Error: {str(error)}")
 
         # Command handler for the "dt" command
         @self.client.command()
@@ -41,10 +54,15 @@ class MusicBot:
                 Logger.info(f"Received command {ctx.command} from {ctx.author}")
 
                 # Fetch the filename using the Fetcher module
-                filename = Fetcher(arg)
+                fatch_url = Fetcher()
+                fetched_url = fatch_url.create_upload_file_from_stream_rip(
+                    arg, ctx.author
+                )
 
                 # return error or link to file on gofile.io
-                return ctx.send(filename)
+                return ctx.send(
+                    ctx.message.author.mention + " for your addiction: " + fetched_url
+                )
 
             except Exception as e:
                 # Log and send an error message
