@@ -1,18 +1,16 @@
 import os
 
 from pathlib import Path
-
 from modules.MusicBot import MusicBot
-from modules.Logger import Logger
+from modules.logger import Logger
 
 
 def main() -> None:
     """
     The main function of the program.
     """
-
-    Logger().info("Starting.")
-    Logger.info("Launched, initialzing.")
+    # Log the start of the program
+    Logger().info("Starting music bot.")
 
     # Set the working directory to the directory of this file.
     os.chdir(Path(__file__).parent)

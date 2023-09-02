@@ -7,16 +7,17 @@ import discord
 from discord import Intents
 from discord.ext import commands
 
-# import custom modules
-from modules.Fetcher import Fetcher
-from modules.Logger import Logger
+from modules.logger import Logger
+from modules.fetch import Fetch
 
 
 # This class represents the MusicBot
 class MusicBot:
     # This is the constructor of the MusicBot class
     def __init__(self):
-        # Create a Discord bot with the specified command prefix and intents
+        # Create an instance of the Fetcher class
+        self.fetcher = Fetch()
+
         self.client = commands.Bot(
             command_prefix=os.getenv("DISCORD_BOT_PREFIX"), intents=Intents.all()
         )
@@ -54,17 +55,12 @@ class MusicBot:
                 Logger.info(f"Received command {ctx.command} from {ctx.author}")
 
                 # Fetch the filename using the Fetcher module
-                fatch_url = Fetcher()
-                fetched_url = fatch_url.create_upload_file_from_stream_rip(
-                    arg, ctx.author
-                )
+                fetched_url = await self.fetcher.fetch(arg, ctx)
 
                 # return error or link to file on gofile.io
-                return ctx.send(
-                    ctx.message.author.mention + " for your addiction: " + fetched_url
-                )
+                await ctx.send("test")
 
             except Exception as e:
-                # Log and send an error message
+                # Log and send an error message with traceback
                 Logger.error(f"Error: {str(e)}")
-                await ctx.send(f"Error: {str(e)}")
+                await ctx.send("test")
