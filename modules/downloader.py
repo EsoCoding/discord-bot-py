@@ -11,11 +11,7 @@ class Downloader:
         # Initialize class variables
         pass
 
-    async def download(self, ctx, url):
-        self.path = (
-            str(os.getenv("DISCORD_BOT_TEMP_FOLDER")) + "/" + str(ctx.generated_name)
-        )
-
+    async def download(self, ctx):
         # Download the stream from the URL and save it in the specified directory.
         Logger.info("Start download...")
         try:
@@ -25,10 +21,10 @@ class Downloader:
                     "rip",
                     "url",
                     "--ignore-db",
-                    "--directory=" + str(self.path),
+                    "--directory=" + str(ctx.unique_path),
                     "--quiet",
                     "--no-interaction",
-                    url,
+                    str(ctx.url),
                 ]
             )
         except Exception as e:
@@ -39,4 +35,4 @@ class Downloader:
         # Check if the download was successful.
         if output.returncode == 0:
             # Set the 'folder_name' attribute of the 'ctx' object to the name of the newly created folder.
-            ctx.path_to_downloads = self.path
+            return

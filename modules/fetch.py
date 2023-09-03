@@ -11,20 +11,23 @@
 # Then at last the uploader class will upload the file to gofile.io
 # and return the url from the gofile.io server to music-bot.py.
 
+import asyncio
 import os
+
 import validators
+from urllib.parse import urlparse
 
 from modules.downloader import Downloader
 from modules.zipper import Zipper
 from modules.uploader import Uploader
 from modules.logger import Logger
-from modules.name_gen import NameGenerator
+from modules.unique_path import UniquePath
 
 
 class Fetch:
     def __init__(self):
         self.downloader = Downloader()
-        self.name_gen = NameGenerator()
+        self.unique_path = UniquePath()
         self.zipper = Zipper()
         self.uploader = Uploader()
         self.temp_path = str(os.getenv("DISCORD_BOT_TEMP_FOLDER"))
@@ -33,17 +36,17 @@ class Fetch:
         # start with giving random name for downloads
 
         try:
-            # generate a random name
-            await self.name_gen.generate_word(ctx, 10)
-            Logger.info(f"Name gen successful name = {ctx.generated_name}")
+            # check if url is valid
+            await self.validate(ctx, url)
+
+            # generate a path with a random folder name
+            await self.generate(ctx)
 
             # download the stream
-            await self.downloader.download(ctx, url)
-            Logger.info(f"Download successful folder = {ctx.path_to_downloads}")  # type: ignore
+            await self.download(ctx)
 
             # zip the files
-            await self.zipper.zipfile(ctx)
-            Logger.info(f"Zip successful folder = {ctx.zip_file_name}")  # type: ignore
+            await self.zipfile(ctx)
 
             # upload the zip file
             await self.upload(ctx)
@@ -52,8 +55,9 @@ class Fetch:
             # Log and send an error message with traceback
             Logger.error(f"Error: {str(e)}")
             await ctx.send(
-                f"@{ctx.author.mention} something wen't wrong, blame assink!"
+                f"@{ctx.author} error occured while downloading! Error is logged."
             )
+            exit()
 
     async def upload(self, ctx):
         try:
@@ -61,4 +65,53 @@ class Fetch:
             Logger.info(f"Upload successful")
         except Exception as e:
             Logger.error(f"Error: {str(e)}")
-            await ctx.send(f"@{ctx.author} something wen't wrong! Error is logged.")
+            await ctx.send(
+                f"{ctx.author} something wen't wrong with uploading! Error is logged."
+            )
+            exit()
+
+    async def zipfile(self, ctx):
+        try:
+            await self.zipper.zipfile(ctx)
+            Logger.info(f"Zip successful")
+        except Exception as e:
+            Logger.error(f"Error: {str(e)}")
+            await ctx.send(
+                f"{ctx.author} something wen't wrong with zipping! Error is logged."
+            )
+            exit()
+
+    async def download(self, ctx):
+        try:
+            await self.downloader.download(ctx)
+            Logger.info(f"Download successful")
+        except Exception as e:
+            Logger.error(f"Error: {str(e)}")
+            await ctx.send(
+                f"{ctx.author} something wen't wrong with downloading! Error is logged."
+            )
+            exit()
+
+    async def generate(self, ctx):
+        try:
+            await self.unique_path.generate(ctx)
+        except Exception as e:
+            Logger.error(f"Error: {str(e)}")
+            await ctx.send(
+                f"{ctx.author} something wen't wrong with generating path! Error is logged."
+            )
+            exit()
+
+    async def validate(self, ctx, url: str):
+        """
+        Checks if the url is valid
+        """
+        try:
+            if validators.url(url):
+                ctx.url = url
+        except Exception as e:
+            Logger.error(f"Error: {str(e)}")
+            await ctx.send(
+                f"{ctx.author} something wen't wrong with validating! Error is logged."
+            )
+            exit()

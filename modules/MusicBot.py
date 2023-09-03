@@ -49,18 +49,17 @@ class MusicBot:
 
         # Command handler for the "dt" command
         @self.client.command()
+        @commands.cooldown(1, 10, commands.BucketType.channel)
         async def dt(ctx, arg):
             try:
                 # Log the received command and the author
                 Logger.info(f"Received command {ctx.command} from {ctx.author}")
 
                 # Fetch the filename using the Fetcher module
-                fetched_url = await self.fetcher.fetch(arg, ctx)
+                await self.fetcher.fetch(arg, ctx)
 
                 # return error or link to file on gofile.io
-                await ctx.send("test")
 
             except Exception as e:
                 # Log and send an error message with traceback
                 Logger.error(f"Error: {str(e)}")
-                await ctx.send("test")

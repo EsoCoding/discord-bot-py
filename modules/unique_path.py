@@ -1,14 +1,15 @@
 import random
 import string
 import sys
+import os
 
 
-class NameGenerator:
+class UniquePath:
     def __init__(self):
         self.vowels = "aeiou"
         self.consonants = "".join(set(string.ascii_lowercase) - set(self.vowels))
 
-    async def generate_word(self, ctx, length=10) -> None:
+    async def generate(self, ctx, length=10):
         word = ""
         for i in range(length):
             if i % 2 == 0:
@@ -16,4 +17,4 @@ class NameGenerator:
             else:
                 word += random.choice(self.vowels)
 
-        ctx.generated_name = word
+        ctx.unique_path = str(os.getenv("DISCORD_BOT_TEMP_FOLDER")) + "/" + str(word)
