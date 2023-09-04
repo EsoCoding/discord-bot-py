@@ -30,9 +30,11 @@ class Downloader:
         except Exception as e:
             # Handle any exception that occurs during the download.
             Logger.error(f"Exception occurred during download: {str(e)}")
-            return
+            return False
 
         # Check if the download was successful.
         if output.returncode == 0:
             # Set the 'folder_name' attribute of the 'ctx' object to the name of the newly created folder.
-            return
+            return True
+        else:
+            return False

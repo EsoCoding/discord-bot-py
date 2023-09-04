@@ -37,29 +37,37 @@ class Fetch:
 
         try:
             # check if url is valid
-            await self.validate(ctx, url)
+            if await self.validate(ctx, url):
+                # generate a path with a random folder name
+                await self.generate(ctx)
 
-            # generate a path with a random folder name
-            await self.generate(ctx)
+                # download the stream
+                download_event = asyncio.Event()
+                asyncio.create_task(self.download(ctx, download_event))
+                await download_event.wait()
 
-            # download the stream
-            await self.download(ctx)
+                # zip the files
+                zipfile_event = asyncio.Event()
+                asyncio.create_task(self.zipfile(ctx, zipfile_event))
+                await zipfile_event.wait()
 
-            # zip the files
-            await self.zipfile(ctx)
+                # upload the zip file
+                upload_event = asyncio.Event()
+                asyncio.create_task(self.upload(ctx, upload_event))
+                await upload_event.wait()
 
-            # upload the zip file
-            await self.upload(ctx)
+                # send a message indicating that the process is complete
+                Logger.info("Download, zipping, and uploading complete!")
+            else:
+                await ctx.send(f"{ctx.author} invalid url")
 
         except Exception as e:
             # Log and send an error message with traceback
             Logger.error(f"Error: {str(e)}")
-            await ctx.send(
-                f"@{ctx.author} error occured while downloading! Error is logged."
-            )
-            exit()
+            await ctx.send(f"Error: {str(e)}")
+            raise
 
-    async def upload(self, ctx):
+    async def upload(self, ctx, event):
         try:
             await self.uploader.upload_file(ctx)
             Logger.info(f"Upload successful")
@@ -68,9 +76,11 @@ class Fetch:
             await ctx.send(
                 f"{ctx.author} something wen't wrong with uploading! Error is logged."
             )
-            exit()
+            raise
+        finally:
+            event.set()
 
-    async def zipfile(self, ctx):
+    async def zipfile(self, ctx, event):
         try:
             await self.zipper.zipfile(ctx)
             Logger.info(f"Zip successful")
@@ -79,9 +89,11 @@ class Fetch:
             await ctx.send(
                 f"{ctx.author} something wen't wrong with zipping! Error is logged."
             )
-            exit()
+            raise
+        finally:
+            event.set()
 
-    async def download(self, ctx):
+    async def download(self, ctx, event):
         try:
             await self.downloader.download(ctx)
             Logger.info(f"Download successful")
@@ -90,7 +102,9 @@ class Fetch:
             await ctx.send(
                 f"{ctx.author} something wen't wrong with downloading! Error is logged."
             )
-            exit()
+            raise
+        finally:
+            event.set()
 
     async def generate(self, ctx):
         try:
@@ -100,7 +114,7 @@ class Fetch:
             await ctx.send(
                 f"{ctx.author} something wen't wrong with generating path! Error is logged."
             )
-            exit()
+            raise
 
     async def validate(self, ctx, url: str):
         """
@@ -109,9 +123,9 @@ class Fetch:
         try:
             if validators.url(url):
                 ctx.url = url
+                return True
+            else:
+                return False
         except Exception as e:
             Logger.error(f"Error: {str(e)}")
-            await ctx.send(
-                f"{ctx.author} something wen't wrong with validating! Error is logged."
-            )
-            exit()
+            raise

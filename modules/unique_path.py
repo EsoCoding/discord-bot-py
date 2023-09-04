@@ -3,6 +3,8 @@ import string
 import sys
 import os
 
+from modules.logger import Logger
+
 
 class UniquePath:
     def __init__(self):
@@ -17,4 +19,11 @@ class UniquePath:
             else:
                 word += random.choice(self.vowels)
 
-        ctx.unique_path = str(os.getenv("DISCORD_BOT_TEMP_FOLDER")) + "/" + str(word)
+        if word is None:
+            return False
+        else:
+            ctx.unique_path = (
+                str(os.getenv("DISCORD_BOT_TEMP_FOLDER")) + "/" + str(word)
+            )
+
+            return True

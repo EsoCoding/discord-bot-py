@@ -50,7 +50,7 @@ class MusicBot:
         # Command handler for the "dt" command
         @self.client.command()
         @commands.cooldown(1, 10, commands.BucketType.channel)
-        async def dt(ctx, arg):
+        async def dl(ctx, arg):
             try:
                 # Log the received command and the author
                 Logger.info(f"Received command {ctx.command} from {ctx.author}")
