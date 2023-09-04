@@ -3,9 +3,7 @@ import os
 from pathlib import Path
 from modules.MusicBot import MusicBot
 from modules.logger import Logger
-from dotenv import load_dotenv
 
-load_dotenv()
 
 def main() -> None:
     """
@@ -13,6 +11,9 @@ def main() -> None:
     """
     # Log the start of the program
     Logger().info("Starting music bot.")
+
+    # Set the working directory to the directory of this file.
+    os.chdir(Path(__file__).parent)
 
     # Initialize bot and run.
     bot: MusicBot = MusicBot()
