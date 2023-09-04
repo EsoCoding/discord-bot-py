@@ -1,4 +1,5 @@
 # Import the os and discord libraries
+from http import client
 import os
 import discord
 
@@ -18,6 +19,7 @@ class MusicBot:
         # Create an instance of the Fetcher class
         self.fetcher = Fetch()
 
+        # Create an instance of the discord client
         self.client = commands.Bot(
             command_prefix=os.getenv("DISCORD_BOT_PREFIX"), intents=Intents.all()
         )
@@ -40,6 +42,7 @@ class MusicBot:
             # Process the message
             await self.client.process_commands(message)
 
+
         # Event handler for when the bot receives a command error
         @self.client.event  # event decorator/wrapper
         async def on_command_error(ctx, error):
@@ -49,9 +52,11 @@ class MusicBot:
 
         # Command handler for the "dt" command
         @self.client.command()
-        @commands.cooldown(1, 10, commands.BucketType.channel)
+        @commands.cooldown(1, 50, commands.BucketType.channel)
         async def dl(ctx, arg):
+
             try:
+
                 # Log the received command and the author
                 Logger.info(f"Received command {ctx.command} from {ctx.author}")
 
@@ -63,3 +68,15 @@ class MusicBot:
             except Exception as e:
                 # Log and send an error message with traceback
                 Logger.error(f"Error: {str(e)}")
+
+        # cooldown error handler
+        @dl.error
+        async def dl_error(ctx, error):
+            if isinstance(error, commands.CommandOnCooldown):
+                await ctx.send(
+                    f"This command is on cooldown, please retry in {error.retry_after:.2f}s"
+                )
+            else:
+                raise error
+  
+        

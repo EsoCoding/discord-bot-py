@@ -17,6 +17,10 @@ import os
 import validators
 from urllib.parse import urlparse
 
+import discord
+
+
+
 from modules.downloader import Downloader
 from modules.zipper import Zipper
 from modules.uploader import Uploader
@@ -24,8 +28,10 @@ from modules.logger import Logger
 from modules.unique_path import UniquePath
 
 
+
 class Fetch:
     def __init__(self):
+        self.client = discord.Client(intents=discord.Intents.all())
         self.downloader = Downloader()
         self.unique_path = UniquePath()
         self.zipper = Zipper()
@@ -56,8 +62,21 @@ class Fetch:
                 asyncio.create_task(self.upload(ctx, upload_event))
                 await upload_event.wait()
 
-                # send a message indicating that the process is complete
-                Logger.info("Download, zipping, and uploading complete!")
+                # delete the temp folder
+                delete_event = asyncio.Event()
+                asyncio.create_task(self.delete(ctx, delete_event))
+                await delete_event.wait()
+
+                # check if all events are completed
+                if delete_event.is_set() and upload_event.is_set() and zipfile_event.is_set() and download_event.is_set():
+
+                    channel_id = int(os.environ.get("DISCORD_BOT_CHANNEL_ID"))
+                    channel = self.client.get_channel(channel_id)
+                    if channel is None:
+                        Logger.error(f"Error: Could not find channel with ID {channel_id}")
+                    else:
+                        await channel.send(f"Downloading {ctx.url} is completed")            
+                                
             else:
                 await ctx.send(f"{ctx.author} invalid url")
 
@@ -66,6 +85,20 @@ class Fetch:
             Logger.error(f"Error: {str(e)}")
             await ctx.send(f"Error: {str(e)}")
             raise
+
+
+    async def delete(self, ctx, event):
+        try:
+            await self.unique_path.delete(ctx)
+            Logger.info(f"Delete successful")
+        except Exception as e:
+            Logger.error(f"Error: {str(e)}")
+            await ctx.send(
+                f"{ctx.author} something wen't wrong with deleting! Error is logged."
+            )
+            raise
+        finally:
+            event.set()
 
     async def upload(self, ctx, event):
         try:
