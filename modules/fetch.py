@@ -30,8 +30,8 @@ from modules.unique_path import UniquePath
 
 
 class Fetch:
-    def __init__(self):
-        self.client = discord.Client(intents=discord.Intents.all())
+    def __init__(self, client):
+        self.client = client
         self.downloader = Downloader()
         self.unique_path = UniquePath()
         self.zipper = Zipper()
@@ -75,7 +75,7 @@ class Fetch:
                     if channel is None:
                         Logger.error(f"Error: Could not find channel with ID {channel_id}")
                     else:
-                        await channel.send(f"Downloading {ctx.url} is completed")            
+                        await channel.send(f"{ctx.author.mention} your present is ready: {ctx.go_file_link}")            
                                 
             else:
                 await ctx.send(f"{ctx.author} invalid url")
@@ -129,13 +129,10 @@ class Fetch:
     async def download(self, ctx, event):
         try:
             await self.downloader.download(ctx)
-            Logger.info(f"Download successful")
         except Exception as e:
-            Logger.error(f"Error: {str(e)}")
             await ctx.send(
                 f"{ctx.author} something wen't wrong with downloading! Error is logged."
             )
-            raise
         finally:
             event.set()
 
