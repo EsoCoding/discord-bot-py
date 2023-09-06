@@ -17,7 +17,7 @@ class MusicBot:
     # This is the constructor of the MusicBot class
     def __init__(self):
         # Create an instance of the Fetcher class
-        self.fetcher = Fetch()
+        
 
         # Create an instance of the discord client
         self.client = commands.Bot(
@@ -37,8 +37,6 @@ class MusicBot:
         # Event handler for when the bot receives a message
         @self.client.event
         async def on_message(message):
-            # Log the message and the author
-            Logger.info(f"Received message {message.content} from {message.author}")
             # Process the message
             await self.client.process_commands(message)
 
@@ -53,13 +51,14 @@ class MusicBot:
         # Command handler for the "dt" command
         @self.client.command()
         @commands.cooldown(1, 50, commands.BucketType.channel)
-        async def dl(ctx, arg):
+        async def dl(ctx, arg, client=self.client):
 
             try:
 
                 # Log the received command and the author
-                Logger.info(f"Received command {ctx.command} from {ctx.author}")
-
+                Logger.info(f"Received command {ctx.command} from {ctx.author} with arg {arg}")
+                # Create an instance of the Fetcher class
+                self.fetcher = Fetch(client)
                 # Fetch the filename using the Fetcher module
                 await self.fetcher.fetch(arg, ctx)
 

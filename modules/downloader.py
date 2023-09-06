@@ -22,7 +22,6 @@ class Downloader:
                     "url",
                     "--ignore-db",
                     "--directory=" + str(ctx.unique_path),
-                    "--quiet",
                     "--no-interaction",
                     str(ctx.url),
                 ]
