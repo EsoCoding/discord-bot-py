@@ -75,7 +75,7 @@ class Fetch:
                     if channel is None:
                         Logger.error(f"Error: Could not find channel with ID {channel_id}")
                     else:
-                        await channel.send(f"{ctx.author} your present is ready: {ctx.go_file_link}")            
+                        await channel.send(f"{ctx.author.mention} your present is ready: {ctx.go_file_link}")            
                                 
             else:
                 await ctx.send(f"{ctx.author} invalid url")

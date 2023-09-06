@@ -1,5 +1,4 @@
 # Import the os and discord libraries
-from http import client
 import os
 import discord
 

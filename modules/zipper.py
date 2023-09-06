@@ -47,11 +47,16 @@ class Zipper:
         except Exception as e:
             # Handle any exception that occurs during the zip process.
             Logger.error(f"Exception occurred during zip: {str(e)}")
-            return False
+            raise ("Somethign wen't wrong during zipping!")
 
         # Check if the zip process was successful.
-        if os.path.exists(zip_file_path):
-            # Set the name and path of the zip file in the context object.
-            Logger.info("Finished zipping file(s)")
-            ctx.zip_file_name = zip_file_path
-            return True
+        try:
+            if os.path.exists(os.path.exists(zip_file_path)):
+                # Set the name and path of the zip file in the context object.
+                Logger.info("Finished zipping file(s)")
+                ctx.zip_file_name = zip_file_path
+                return True
+        except Exception as e:
+            # Handle any exception that occurs during the zip process.
+            Logger.error(f"Zip file does not exist!")
+            raise
