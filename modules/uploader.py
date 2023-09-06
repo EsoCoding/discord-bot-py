@@ -1,8 +1,3 @@
-import os
-import subprocess
-import json
-from urllib import request
-import certifi
 from io import BytesIO
 from modules.logger import Logger
 from inspect import currentframe
