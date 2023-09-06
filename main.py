@@ -16,7 +16,7 @@ def main() -> None:
 
     # Initialize bot and run.
     bot: MusicBot = MusicBot()
-    bot.client.run(token=os.getenv("DISCORD_BOT_TOKEN"))
+    bot.client.run(os.getenv("DISCORD_BOT_TOKEN"))
 
 
 if __name__ == "__main__":

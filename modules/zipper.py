@@ -39,7 +39,7 @@ class Zipper:
 
         try:
             # Use the 'zip' command line tool to create the zip file.
-            zip_file_path = os.path.join(path, directory_name + ".zip")
+            zip_file_path = os.path.join(path, directory_name)
             with zipfile.ZipFile(zip_file_path, "w") as zipFile:
                 for file in os.listdir(directory_path):
                     if file.endswith(".mp3"):
