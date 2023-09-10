@@ -46,7 +46,7 @@ class Downloader:
             )
         except Exception as e:
             Logger.error(f"Exception occurred during download: {str(e)}")
-            raise ValueError("Something executing rip, download failed!")
+            raise
 
         # Check if the new albums was actually downloaded by checking if the directory exists
         # and if it contains *.mp3 files.
@@ -62,4 +62,4 @@ class Downloader:
                     return True
         except Exception as e:
             Logger.error(f"Exception occurred during download: {str(e)}")
-            raise ValueError("Something went wrong, new album does not exist!")
+            raise

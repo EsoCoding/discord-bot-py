@@ -1,14 +1,12 @@
-person_fields = {
-    "name": {"pretty": "first name", "validation": str.isalpha},
-    "lastname": {"pretty": "last name", "validation": str.isalpha},
-    "fathers_name": {"pretty": "father's name", "validation": str.isalpha},
-    "age": {"pretty": "age", "validation": str.isdigit},
-    "class": {"pretty": "class", "validation": str.isdigit},
-}
+from urllib.parse import urlparse
+class URLValidator():
+    def __init__(self):
+        pass
 
-for field, info in person_fields.items():
-    while True:
-        user_input = input(f"Please enter your {info['pretty']}: ")
-        if info["validation"](user_input):
-            break
-        print("Invalid input. ", end="")
+    async def validate(ctx, arg):
+        try:
+            result = urlparse(arg)
+            return all([result.scheme, result.netloc]) and (result.netloc == "www.qobuz.com" or result.netloc == "www.deezer.com")
+        except ValueError:
+            return ctx.on_command_error("Invalid URL")
+    

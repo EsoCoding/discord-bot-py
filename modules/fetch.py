@@ -13,20 +13,14 @@
 
 import asyncio
 import os
-
-import validators
-from urllib.parse import urlparse
-
 import discord
 
-
-
 from modules.downloader import Downloader
-from modules.zipper import Zipper
+from modules.zipfile import ZipFile
 from modules.uploader import Uploader
 from modules.logger import Logger
 from modules.unique_path import UniquePath
-
+from modules.validate import URLValidator
 
 
 class Fetch:
@@ -34,52 +28,48 @@ class Fetch:
         self.client = client
         self.downloader = Downloader()
         self.unique_path = UniquePath()
-        self.zipper = Zipper()
+        self.url_validation = URLValidator()
+        self.zipper = ZipFile()
         self.uploader = Uploader()
         self.temp_path = str(os.getenv("DISCORD_BOT_TEMP_FOLDER"))
 
     async def fetch(self, url: str, ctx):
-        # start with giving random name for downloads
 
         try:
-            # check if url is valid
-            if await self.validate(ctx, url):
-                # generate a path with a random folder name
-                await self.generate(ctx)
 
-                # download the stream
-                download_event = asyncio.Event()
-                asyncio.create_task(self.download(ctx, download_event))
-                await download_event.wait()
+            # generate a path with a random folder name
+            await self.generate(ctx)
 
-                # zip the files
-                zipfile_event = asyncio.Event()
-                asyncio.create_task(self.zipfile(ctx, zipfile_event))
-                await zipfile_event.wait()
+            # download the stream
+            download_event = asyncio.Event()
+            asyncio.create_task(self.download(ctx, download_event))
+            await download_event.wait()
 
-                # upload the zip file
-                upload_event = asyncio.Event()
-                asyncio.create_task(self.upload(ctx, upload_event))
-                await upload_event.wait()
+            # zip the files
+            zipfile_event = asyncio.Event()
+            asyncio.create_task(self.zipfile(ctx, zipfile_event))
+            await zipfile_event.wait()
 
-                # delete the temp folder
-                delete_event = asyncio.Event()
-                asyncio.create_task(self.delete(ctx, delete_event))
-                await delete_event.wait()
+            # upload the zip file
+            upload_event = asyncio.Event()
+            asyncio.create_task(self.upload(ctx, upload_event))
+            await upload_event.wait()
 
-                # check if all events are completed
-                if delete_event.is_set() and upload_event.is_set() and zipfile_event.is_set() and download_event.is_set():
+            # delete the temp folder
+            delete_event = asyncio.Event()
+            asyncio.create_task(self.delete(ctx, delete_event))
+            await delete_event.wait()
 
-                    channel_id = int(os.environ.get("DISCORD_BOT_CHANNEL_ID"))
-                    channel = self.client.get_channel(channel_id)
-                    if channel is None:
-                        Logger.error(f"Error: Could not find channel with ID {channel_id}")
-                    else:
-                        await channel.send(f"{ctx.author.mention} your present is ready: {ctx.go_file_link}")            
-                                
-            else:
-                await ctx.send(f"{ctx.author} invalid url")
+            # check if all events are completed
+            if delete_event.is_set() and upload_event.is_set() and zipfile_event.is_set() and download_event.is_set():
 
+                channel_id = int(os.environ.get("DISCORD_BOT_CHANNEL_ID"))
+                channel = self.client.get_channel(channel_id)
+                if channel is None:
+                    Logger.error(f"Error: Could not find channel with ID {channel_id}")
+                else:
+                    return ctx, channel
+                    
         except Exception as e:
             # Log and send an error message with traceback
             Logger.error(f"Error: {str(e)}")
@@ -94,7 +84,7 @@ class Fetch:
         except Exception as e:
             Logger.error(f"Error: {str(e)}")
             await ctx.send(
-                f"{ctx.author} something wen't wrong with deleting! Error is logged."
+                f"{ctx.author.mention} something wen't wrong with deleting! Error is logged."
             )
             raise
         finally:
@@ -107,7 +97,7 @@ class Fetch:
         except Exception as e:
             Logger.error(f"Error: {str(e)}")
             await ctx.send(
-                f"{ctx.author} something wen't wrong with uploading! Error is logged."
+                f"{ctx.author.mention} something wen't wrong with uploading! Error is logged."
             )
             raise
         finally:
@@ -120,7 +110,7 @@ class Fetch:
         except Exception as e:
             Logger.error(f"Error: {str(e)}")
             await ctx.send(
-                f"{ctx.author} something wen't wrong with zipping! Error is logged."
+                f"{ctx.author.mention} something wen't wrong with zipping! Error is logged."
             )
             raise
         finally:
@@ -131,8 +121,9 @@ class Fetch:
             await self.downloader.download(ctx)
         except Exception as e:
             await ctx.send(
-                f"{ctx.author} something wen't wrong with downloading! Error is logged."
+                f"{ctx.author.mention} something wen't wrong with downloading! Error is logged."
             )
+            raise
         finally:
             event.set()
 
@@ -151,11 +142,12 @@ class Fetch:
         Checks if the url is valid
         """
         try:
-            if validators.url(url):
+            if self.url_validation.validate(url):
                 ctx.url = url
+                Logger.info(f"Valid url: {url}")
                 return True
             else:
-                return False
+                await ctx.send(f"{ctx.author.mention} {url} is not a valid url.")
         except Exception as e:
             Logger.error(f"Error: {str(e)}")
             raise

@@ -2,7 +2,7 @@ import os
 import zipfile
 from modules.logger import Logger
 
-class Zipper:
+class ZipFile:
     def __init__(self):
         pass
 
