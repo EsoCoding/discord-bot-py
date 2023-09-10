@@ -16,7 +16,6 @@ from modules.downloader import Downloader
 from modules.zipfile import ZipFile
 from modules.uploader import Uploader
 
-
 # This class represents the MusicBot
 class MusicBot:
     def __init__(self):
@@ -46,11 +45,16 @@ class MusicBot:
             zipfile_status  = await self.zipfile.zipfile(ctx)
 
             if await self.uploader.upload_file(ctx):
+                await ctx.send(f"{ctx.author.mention} ")
 
                 channel_id = int(os.environ.get("DISCORD_BOT_CHANNEL_ID"))
                 channel = self.client.get_channel(channel_id)
-                await channel.send(f"{ctx.author.mention} your present is ready: {ctx.go_file_link}")     
-                Logger.info(f"send {ctx.author.mention} your present is ready: {ctx.go_file_link}")
+                
+                if channel is None:
+                    Logger.error(f"Error: Could not find channel with ID {channel_id}")
+                else:
+                    await channel.send(f"{ctx.author.mention} your present is ready: {ctx.go_file_link}")     
+                    Logger.info(f"sended message to channel to {ctx.author.mention} with upload link: {ctx.go_file_link}")
 
             if await self.unique_path.delete(ctx):
                 Logger.info("Deleted temp folder")
