@@ -14,6 +14,7 @@ from modules.zipfile import ZipFile
 from modules.uploader import Uploader
 
 # This class represents the MusicBot
+
 class MusicBot:
     def __init__(self):
         # Create a Discord bot client with a specified command prefix and all available intents
