@@ -35,3 +35,4 @@ class ZipFile:
         if self._check_zip_success(zip_file_path):
             Logger.info("Finished zipping file(s)")
             ctx.zip_file_name = zip_file_path
+            return True

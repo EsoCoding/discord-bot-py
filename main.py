@@ -1,19 +1,47 @@
 import os
+import dotenv
 
-from pathlib import Path
+from os.path import join, dirname
 
-from discord import Intents
-from discord.ext.commands import Bot
 from modules.MusicBot import MusicBot
 from modules.logger import Logger
-from dotenv import load_dotenv
 
-load_dotenv()
+
+
+# Importing Logger outside main function to improve readability and performance
+logger = Logger()
+
+def check_env():
+
+    # Load.env file.
+    try:
+        env = join(dirname(__file__), '.env')
+        Logger.info("Loaded .env file")
+    except:
+        Logger.error("Failed loading .env file")
+        exit()
+
+
+def main() -> None:
+    """
+    The main function of the program.
+    """
+
+    Logger.info("Starting music bot.")
+
+    #Check if env exists, else exit
+    check_env()
+
+    # Encapsulate bot actions inside the main function.
+    bot: MusicBot = MusicBot()
+
+    # Replacing os.getenv with os.environ[], specifying the full path to the token if necessary.
+    bot.client.run(os.environ["DISCORD_BOT_TOKEN"])
+
 
 if __name__ == "__main__":
-    bot = Bot(
-    command_prefix=os.getenv("DISCORD_BOT_PREFIX"),
-    intents=Intents.all(),
-    help_command=None,)
-    bot.add_cog(MusicBot())
+    """
+    Entry point of the program.
+    """
 
+    main()

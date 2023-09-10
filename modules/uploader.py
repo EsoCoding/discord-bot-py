@@ -20,7 +20,7 @@ class Uploader:
 
     def upload_file_to_gofile(self, server, file_path):
         upload_url = f"https://{server}.gofile.io/uploadFile"
-        Logger.info(f"Upload url: {upload_url}")
+        Logger.info(f"Uploading file to url: {upload_url}")
         with open(file_path, "rb") as file:
             response = requests.post(upload_url, files={"file": file})
         return response
@@ -42,6 +42,7 @@ class Uploader:
             server = self.get_gofile_server()
             response = self.upload_file_to_gofile(server, ctx.zip_file_name)
             ctx.go_file_link = self.handle_upload_response(response)
+            return True
         except Exception as e:
             Logger.error(f"Error: {str(e)}")
             raise ValueError(f"Upload failed, error {str(e)}")

@@ -32,6 +32,7 @@ class UniquePath:
         try:
             Logger.info(f"Deleting temp folder: {ctx.unique_path}")
             os.system(f"rm -rf {ctx.unique_path}")
+            return True
         except Exception as e:
             Logger.error(f"Error: {str(e)}")
-            raise
+            raise Exception(f"Error: {str(e)}")

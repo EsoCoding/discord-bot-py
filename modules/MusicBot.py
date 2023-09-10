@@ -10,17 +10,56 @@ from discord import Intents
 from discord.ext import commands
 
 from modules.logger import Logger
-from modules.fetch import Fetch
 from modules.validate import URLValidator
 from modules.unique_path import UniquePath
 from modules.downloader import Downloader
+from modules.zipfile import ZipFile
+from modules.uploader import Uploader
 
 
 # This class represents the MusicBot
-class MusicBot(commands.Bot):
-    # This is the constructor of the MusicBot class
+class MusicBot:
     def __init__(self):
-        pass
+        self.client = commands.Bot(
+            command_prefix=os.getenv("DISCORD_BOT_PREFIX"), intents=Intents.all()
+        )
+        self.unique_path = UniquePath()
+        self.validation = URLValidator()
+        self.downloader = Downloader()
+        self.zipfile    = ZipFile()
+        self.uploader   = Uploader()
+        self.client.add_listener(self.on_ready)
+        self.client.command()(self.dl)
+    
+    def on_ready(self, ctx):
+        Logger.info(f"Logged in as {self.client.user}")
+
+    @commands.cooldown(1, 20, commands.BucketType.channel)
+    async def dl(self, ctx, arg):
+        # validate the url
+        if await self.validation.validate(ctx, arg):
+            # generate a path with a random folder name
+            generate_status = await self.unique_path.generate(ctx)
+
+            download_status = await self.downloader.download(ctx)
+
+            zipfile_status  = await self.zipfile.zipfile(ctx)
+
+            if await self.uploader.upload_file(ctx):
+
+                channel_id = int(os.environ.get("DISCORD_BOT_CHANNEL_ID"))
+                channel = self.client.get_channel(channel_id)
+                await channel.send(f"{ctx.author.mention} your present is ready: {ctx.go_file_link}")     
+                Logger.info(f"send {ctx.author.mention} your present is ready: {ctx.go_file_link}")
+
+            if await self.unique_path.delete(ctx):
+                Logger.info("Deleted temp folder")
+
+        else:
+            # Log the error
+            Logger.error("Invalid URL")
+            await ctx.send("Invalid URL")
+    
     async def on_ready(self):
         # Log that the bot is logged in and print it to the console
         Logger.info(f"Bot is now logged in as {self.client.user}")
@@ -28,6 +67,7 @@ class MusicBot(commands.Bot):
         await self.client.change_presence(
             status=discord.Status.online, activity=None
         )
+
     async def on_message(self, message):
         # Process the message
         await self.client.process_commands(message)
@@ -37,47 +77,3 @@ class MusicBot(commands.Bot):
         # Log the error and send an error message
         Logger.error(f"Error: {str(error)}")
         await ctx.send(f"Error: {str(error)}")
-
-    async def validate_url(self, ctx, arg):
-        if await self.validation.validate(ctx, arg):
-            logger.info(f"Valid URL {arg}")
-            return True
-        else:
-            await ctx.on_command_error(self, ctx, f"{arg} is an invalid URL.")
-            return False
-        
-    async def generate_path(self, ctx):
-        if await self.unique_path.generate():
-            return True
-        else:
-            return False
-        
-    async def download(ctx):
-        if await ctx.generate_path(ctx):
-            return True
-        else:
-            return False
-
-        
-        # Command handler for the "dt" command
-
-    @commands.cooldown(1, 20, commands.BucketType.channel)
-    async def dl(self, ctx, arg):
-        # validate the url
-        if await self.validate_url(ctx, arg):
-            # generate a path with a random folder name
-            if await self.generate_path(ctx):
-
-                await self.download(ctx)
-
-        # cooldown error handler
-        @dl.error
-        async def dl_error(ctx, error):
-            if isinstance(error, commands.CommandOnCooldown):
-                await ctx.send(
-                    f"{error.retry_after:.2f}s"
-                )
-            else:
-                raise error
-  
-        
