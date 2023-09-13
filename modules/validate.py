@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 from modules.logger import Logger
 
-class URLValidator():
+class Validation():
     def __init__(self):
         pass
 
