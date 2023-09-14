@@ -50,7 +50,7 @@ class ZipFile:
 
     async def zipfile(self, ctx) -> None:
         # Get the directory path and name from the context
-        directory_path = str(ctx.album_path)
+        directory_path = str(ctx.unique_path)
         directory_name = str(ctx.album_name)
         
         # Create the path for the zip file

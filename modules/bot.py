@@ -36,6 +36,7 @@ class Bot(discord.Client):
         async def download(ctx, url: str):
             # validate the url
             if await self.validation.validate(ctx, url):
+                ctx.send(f"{ctx.author.mention} processing request, i'll send you a message when your haul has arrived!")
                 # generate a path with a random folder name
                 await self.unique_path.generate(ctx)
                 # download the files
@@ -45,16 +46,11 @@ class Bot(discord.Client):
                 # upload the files
                 if await self.uploader.upload_file(ctx):
                     
-                    # send a message to the channel
-                    channel_id = int(os.environ.get("DISCORD_BOT_CHANNEL_ID"))
-                    # get the channel object
-                    channel = self.commands.get_channel(channel_id)
-                    # check channel exists and send message
-                    if channel is None:
-                        Logger.error(f"Error: Could not find channel with ID {channel_id}")
-                    else:
-                        await channel.send(f"{ctx.author.mention} your present is ready: {ctx.go_file_link}")     
-                        Logger.info(f"sended message to channel to {ctx.author.mention} with upload link: {ctx.go_file_link}")
+                    user = await self.commands.fetch_user(int(ctx.author.id))
+                    await self.message_user(ctx, user, f"Here is your haul {ctx.go_file_link}")
+                    
+                    Logger.info(f"sended message to {ctx.author.name} with download link: {ctx.go_file_link}")
+                    
                 # delete the temp folder
                 if await self.unique_path.delete(ctx):
                     Logger.info("Deleted temp folder")
@@ -65,6 +61,10 @@ class Bot(discord.Client):
                 await ctx.send("Invalid URL")
 
         self.commands.run(os.environ.get("DISCORD_BOT_TOKEN"))
+
+    async def message_user(self, context, user: discord.User, message):
+        await user.send(message)
+
 
     async def on_ready(self):
         Logger.info(f"You are now logged in as: {self.commands.user}")
