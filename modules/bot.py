@@ -30,10 +30,6 @@ class Bot(discord.Client):
         self.uploader = Uploader()
 
     def start(self):
-        @self.commands.event
-        async def on_ready():
-            Logger.info(f"You are now logged in as: {self.commands.user}")
-            await self.on_ready()
             
         @self.commands.command(name="download", help="Download a file from a URL")
         async def download(ctx, url: str):
@@ -58,10 +54,24 @@ class Bot(discord.Client):
                 if await self.unique_path.delete(ctx):
                     Logger.info("Deleted temp folder")
 
-            else:
+            elif await self.validation.validate(ctx, url) == False:
                 # Log the error
                 Logger.error("Invalid URL")
+                raise commands.errors.CommandInvokeError("Invalid URL")
+            elif await url == None:
+                #log error
+                Logger.error("Missing required argument")
+                raise commands.errors.MissingRequiredArgument("Missing required argument")
+            
+        @self.commands.event
+        async def on_command_error(ctx, error):
+            if isinstance(error, commands.errors.MissingRequiredArgument):
+                await ctx.send("Missing required argument")
+            elif isinstance(error, commands.errors.CommandInvokeError):
                 await ctx.send("Invalid URL")
+            else:
+                await ctx.send(error)
+        
 
         self.commands.run(os.environ.get("DISCORD_BOT_TOKEN"))
 
