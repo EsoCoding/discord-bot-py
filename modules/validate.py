@@ -1,5 +1,5 @@
 from urllib.parse import urlparse
-from modules.logger import Logger
+from .logger import Logger
 
 class Validation():
     def __init__(self):
