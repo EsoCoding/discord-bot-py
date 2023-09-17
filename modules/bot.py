@@ -30,8 +30,11 @@ class Bot(discord.Client):
         self.uploader = Uploader()
 
     def start(self):
-        self.commands.add_listener(self.on_ready)
-
+        @self.commands.event
+        async def on_ready():
+            Logger.info(f"You are now logged in as: {self.commands.user}")
+            await self.on_ready()
+            
         @self.commands.command(name="download", help="Download a file from a URL")
         async def download(ctx, url: str):
             # validate the url
